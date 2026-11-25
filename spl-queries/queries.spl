@@ -1,0 +1,49 @@
+1. Total SSH Events:
+    index=main sourcetype="ssh-log"
+    | stats count
+
+2. Authentication Outcomes
+    index=main sourcetype="ssh-log"
+    | search event_type="auth_success" OR event_type="auth_failure"
+    | stats count by event_type
+
+3. SSH Login Activity Over Time
+    index=main sourcetype="ssh-log"
+    | search event_type="auth_success" OR event_type="auth_failure"
+    | timechart span=5m count by event_type
+
+4. Top Source IPs:
+    index=main sourcetype="ssh-log"
+    | stats count by src_ip
+    | sort - count
+    | head 10
+
+5. Top Target Servers
+    index=main sourcetype="ssh-log"
+    | stats count by dest_ip
+    | sort - count
+    | head 10
+
+6. Top Targeted Usernames
+    index=main sourcetype="ssh-log"
+    | stats count by username
+    | sort - count
+    | head 10
+
+7. Repeated Authentication Failures
+    index=main sourcetype="ssh-log" event_type="auth_failure"
+    | bin _time span=5m
+    | stats count by src_ip dest_ip _time
+    | where count > 5
+    | sort - count
+
+8. Successful Login Details
+    index=main sourcetype="ssh-log" event_type="auth_success"
+    | table _time src_ip dest_ip username event_type
+    | sort - _time
+
+9. Recent SSH Events
+    index=main sourcetype="ssh-log"
+    | table _time src_ip dest_ip username event_type
+    | sort - _time
+    | head 100
